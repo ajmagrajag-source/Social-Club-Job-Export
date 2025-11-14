@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType  # Add this line
 import time
 import json
 
@@ -139,6 +140,7 @@ def validate_and_clean_urls(text):
     return unique_urls, playlist_urls
 
 # Web scraping functions
+@st.cache_resource
 def setup_driver():
     """Set up and return a Chrome driver instance"""
     chrome_options = Options()
@@ -147,25 +149,14 @@ def setup_driver():
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-    chrome_options.add_argument('--disable-extensions')
-    chrome_options.add_argument('--disable-infobars')
-    chrome_options.add_argument('--disable-notifications')
-    chrome_options.add_argument('--disable-popup-blocking')
-    chrome_options.add_argument('--disable-translate')
-    chrome_options.add_argument('--disable-default-apps')
-    chrome_options.add_argument('--disable-background-timer-throttling')
-    chrome_options.add_argument('--disable-backgrounding-occluded-windows')
-    chrome_options.add_argument('--disable-renderer-backgrounding')
-    chrome_options.add_argument('--disable-features=TranslateUI')
-    chrome_options.add_argument('--disable-ipc-flooding-protection')
     chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
     
-    service = Service(ChromeDriverManager().install())
+    # Use ChromeType.CHROMIUM to match the installed browser
+    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.set_window_size(1366, 768)
     
     return driver
-
 def bypass_age_gate(driver):
     """Try to bypass Rockstar Social Club age gate"""
     try:
