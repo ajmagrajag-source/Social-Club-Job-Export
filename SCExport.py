@@ -10,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import json
-import pyperclip
 
 # Page config
 st.set_page_config(
@@ -141,22 +140,21 @@ def validate_and_clean_urls(text):
 
 # Web scraping functions
 def setup_driver():
+    """Set up and return a Chrome driver instance"""
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
-    chrome_options.binary_location = "/usr/bin/chromium"  # Add this for Streamlit Cloud
+    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
     
-    # Try to use system chromium driver
-    try:
-        driver = webdriver.Chrome(options=chrome_options)
-    except:
-        # Fallback to webdriver-manager
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    driver.set_window_size(1366, 768)
     
     return driver
+
 def bypass_age_gate(driver):
     """Try to bypass Rockstar Social Club age gate"""
     try:
@@ -434,7 +432,7 @@ def display_card_view(scraped_jobs):
             
             with col1:
                 if job['jobImage']:
-                    st.image(job['jobImage'], width='stretch')
+                    st.image(job['jobImage'], use_container_width=True)
                 else:
                     st.info("No image available")
             
@@ -672,14 +670,6 @@ def import_settings(uploaded_file):
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")
 
-def copy_to_clipboard(text, format_name):
-    """Copy text to clipboard"""
-    try:
-        pyperclip.copy(text)
-        st.success(f"✅ {format_name} copied to clipboard!")
-    except:
-        st.error("❌ Failed to copy to clipboard. Please copy manually from the text area.")
-
 # Export format UI functions with auto-generation
 def display_bbcode_settings():
     """Display BBCode export settings with auto-generation"""
@@ -708,8 +698,7 @@ def display_bbcode_settings():
     bbcode_output = generate_bbcode(st.session_state['scraped_jobs'], st.session_state.settings)
     st.code(bbcode_output, language=None, line_numbers=False)
     
-    if st.button("📋 Copy to Clipboard", key="copy_bbcode", type="primary"):
-        copy_to_clipboard(bbcode_output, "BBCode")
+    st.info("💡 Use the copy button in the top-right corner of the code block above!")
 
 def display_markdown_settings():
     """Display Markdown export settings with auto-generation"""
@@ -734,8 +723,7 @@ def display_markdown_settings():
     markdown_output = generate_markdown(st.session_state['scraped_jobs'], st.session_state.settings)
     st.code(markdown_output, language=None, line_numbers=False)
     
-    if st.button("📋 Copy to Clipboard", key="copy_markdown", type="primary"):
-        copy_to_clipboard(markdown_output, "Markdown")
+    st.info("💡 Use the copy button in the top-right corner of the code block above!")
 
 def display_youtube_settings():
     """Display YouTube export settings with auto-generation"""
@@ -759,8 +747,7 @@ def display_youtube_settings():
     youtube_output = generate_youtube(st.session_state['scraped_jobs'], st.session_state.settings)
     st.code(youtube_output, language=None, line_numbers=False)
     
-    if st.button("📋 Copy to Clipboard", key="copy_youtube", type="primary"):
-        copy_to_clipboard(youtube_output, "YouTube Description")
+    st.info("💡 Use the copy button in the top-right corner of the code block above!")
 
 def display_text_settings():
     """Display Text export settings with auto-generation"""
@@ -784,8 +771,7 @@ def display_text_settings():
     text_output = generate_text(st.session_state['scraped_jobs'], st.session_state.settings)
     st.code(text_output, language=None, line_numbers=False)
     
-    if st.button("📋 Copy to Clipboard", key="copy_text", type="primary"):
-        copy_to_clipboard(text_output, "Plain Text")
+    st.info("💡 Use the copy button in the top-right corner of the code block above!")
 
 def display_csv_settings():
     """Display CSV export settings with auto-generation"""
@@ -813,8 +799,7 @@ def display_csv_settings():
     csv_output = generate_csv(st.session_state['scraped_jobs'], st.session_state.settings)
     st.code(csv_output, language=None, line_numbers=False)
     
-    if st.button("📋 Copy to Clipboard", key="copy_csv", type="primary"):
-        copy_to_clipboard(csv_output, "CSV")
+    st.info("💡 Use the copy button in the top-right corner of the code block above!")
 
 # Main app
 def main():
@@ -832,7 +817,7 @@ def main():
     st.markdown("---")
     
     # Single Input Section at the top
-    st.header("📝 Input URLs")
+    st.header("🔍 Input URLs")
     st.markdown("**Paste individual job URLs or playlist URLs:**")
     input_text = st.text_area(
         "Accepts both individual job URLs and playlist URLs",
@@ -841,7 +826,7 @@ def main():
     )
 
     # Process button
-    if st.button("🔍 Extract & Scrape Jobs", type="primary", width='stretch'):
+    if st.button("🔎 Extract & Scrape Jobs", type="primary", use_container_width=True):
         if input_text:
             job_urls, playlist_urls = validate_and_clean_urls(input_text)
             
@@ -849,7 +834,7 @@ def main():
             
             # If there are playlist URLs, extract jobs from them
             if playlist_urls:
-                st.info(f"🔄 Found {len(playlist_urls)} playlist(s). Extracting jobs...")
+                st.info(f"📄 Found {len(playlist_urls)} playlist(s). Extracting jobs...")
                 
                 driver = None
                 try:
@@ -930,7 +915,7 @@ def main():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("↻ Reset to Default", key="reset_settings_export", width='stretch'):
+                if st.button("↻ Reset to Default", key="reset_settings_export", use_container_width=True):
                     reset_settings_to_default()
             
             with col2:
@@ -941,7 +926,7 @@ def main():
                     file_name="rockstar_scraper_settings.json",
                     mime="application/json",
                     help="Download settings as backup",
-                    width='stretch'
+                    use_container_width=True
                 )
             
             with col3:
