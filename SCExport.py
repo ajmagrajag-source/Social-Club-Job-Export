@@ -140,7 +140,6 @@ def validate_and_clean_urls(text):
     return unique_urls, playlist_urls
 
 # Web scraping functions
-@st.cache_resource
 def setup_driver():
     """Set up and return a Chrome driver instance"""
     chrome_options = Options()
@@ -648,6 +647,40 @@ def generate_csv(jobs, settings):
     
     return content.strip()
 
+def display_code_with_copy_button(content, format_name, key_prefix):
+    """Display code with a prominent manual copy button"""
+    # Create columns for the copy button
+    col1, col2, col3 = st.columns([4, 1, 1])
+    with col1:
+        st.markdown(f"#### 📋 {format_name} Output")
+    with col3:
+        # Using a form to prevent page rerun on click
+        with st.form(key=f"copy_form_{key_prefix}"):
+            copy_clicked = st.form_submit_button("📋 Copy", use_container_width=True, type="primary")
+    
+    # Display the code
+    st.code(content, language=None, line_numbers=False)
+    
+    # Show toast notification if copy was clicked
+    if copy_clicked:
+        st.toast(f"✅ {format_name} copied to clipboard!", icon="✅")
+        # Use JavaScript to copy to clipboard
+        st.components.v1.html(
+            f"""
+            <script>
+                const text = {repr(content)};
+                navigator.clipboard.writeText(text).then(function() {{
+                    console.log('Copied to clipboard successfully!');
+                }}, function(err) {{
+                    console.error('Could not copy text: ', err);
+                }});
+            </script>
+            """,
+            height=0,
+        )
+    
+    st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block corner!")
+
 # Settings management functions
 def reset_settings_to_default():
     """Reset settings to default values"""
@@ -696,11 +729,10 @@ def display_bbcode_settings():
     if st.session_state.settings['bbcode_use_custom']:
         st.session_state.settings['bbcode_custom'] = st.text_area("Custom BBCode", value=st.session_state.settings['bbcode_custom'], key='bb_custom_text')
     
-    # Auto-generate output
+    # Auto-generate output with copy button
     bbcode_output = generate_bbcode(st.session_state['scraped_jobs'], st.session_state.settings)
-    st.code(bbcode_output, language=None, line_numbers=False)
-    
-    st.info("💡 Use the copy button in the top-right corner of the code block above!")
+    display_code_with_copy_button(bbcode_output, "BBCode", "bbcode")
+
 
 def display_markdown_settings():
     """Display Markdown export settings with auto-generation"""
@@ -721,11 +753,10 @@ def display_markdown_settings():
         st.session_state.settings['markdown_lastupdated'] = st.checkbox("Last Updated", value=st.session_state.settings['markdown_lastupdated'], key='md_update')
         st.session_state.settings['markdown_linebreak'] = st.checkbox("Line Break", value=st.session_state.settings['markdown_linebreak'], key='md_break')
     
-    # Auto-generate output
+    # Auto-generate output with copy button
     markdown_output = generate_markdown(st.session_state['scraped_jobs'], st.session_state.settings)
-    st.code(markdown_output, language=None, line_numbers=False)
-    
-    st.info("💡 Use the copy button in the top-right corner of the code block above!")
+    display_code_with_copy_button(markdown_output, "Markdown", "markdown")
+
 
 def display_youtube_settings():
     """Display YouTube export settings with auto-generation"""
@@ -745,11 +776,10 @@ def display_youtube_settings():
         st.session_state.settings['youtube_lastupdated'] = st.checkbox("Last Updated", value=st.session_state.settings['youtube_lastupdated'], key='yt_update')
         st.session_state.settings['youtube_linebreak'] = st.checkbox("Line Break", value=st.session_state.settings['youtube_linebreak'], key='yt_break')
     
-    # Auto-generate output
+    # Auto-generate output with copy button
     youtube_output = generate_youtube(st.session_state['scraped_jobs'], st.session_state.settings)
-    st.code(youtube_output, language=None, line_numbers=False)
-    
-    st.info("💡 Use the copy button in the top-right corner of the code block above!")
+    display_code_with_copy_button(youtube_output, "YouTube", "youtube")
+
 
 def display_text_settings():
     """Display Text export settings with auto-generation"""
@@ -769,11 +799,10 @@ def display_text_settings():
         st.session_state.settings['text_lastupdated'] = st.checkbox("Last Updated", value=st.session_state.settings['text_lastupdated'], key='txt_update')
         st.session_state.settings['text_linebreak'] = st.checkbox("Line Break", value=st.session_state.settings['text_linebreak'], key='txt_break')
     
-    # Auto-generate output
+    # Auto-generate output with copy button
     text_output = generate_text(st.session_state['scraped_jobs'], st.session_state.settings)
-    st.code(text_output, language=None, line_numbers=False)
-    
-    st.info("💡 Use the copy button in the top-right corner of the code block above!")
+    display_code_with_copy_button(text_output, "Text", "text")
+
 
 def display_csv_settings():
     """Display CSV export settings with auto-generation"""
@@ -797,11 +826,9 @@ def display_csv_settings():
     if st.session_state.settings['csv_use_custom']:
         st.session_state.settings['csv_custom'] = st.text_input("Custom CSV Text (repeated for each job)", value=st.session_state.settings['csv_custom'], key='csv_custom_text')
     
-    # Auto-generate output
+    # Auto-generate output with copy button
     csv_output = generate_csv(st.session_state['scraped_jobs'], st.session_state.settings)
-    st.code(csv_output, language=None, line_numbers=False)
-    
-    st.info("💡 Use the copy button in the top-right corner of the code block above!")
+    display_code_with_copy_button(csv_output, "CSV", "csv")
 
 # Main app
 def main():
