@@ -676,29 +676,6 @@ def display_code_with_copy_button(content, format_name, key_prefix):
     st.code(content, language=None, line_numbers=False)
     
     st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block corner!")
-    
-    # Display the code
-    st.code(content, language=None, line_numbers=False)
-    
-    # Show toast notification if copy was clicked
-    if copy_clicked:
-        st.toast(f"✅ {format_name} copied to clipboard!", icon="✅")
-        # Use JavaScript to copy to clipboard
-        st.components.v1.html(
-            f"""
-            <script>
-                const text = {repr(content)};
-                navigator.clipboard.writeText(text).then(function() {{
-                    console.log('Copied to clipboard successfully!');
-                }}, function(err) {{
-                    console.error('Could not copy text: ', err);
-                }});
-            </script>
-            """,
-            height=0,
-        )
-    
-    st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block corner!")
 
 # Settings management functions
 def reset_settings_to_default():
