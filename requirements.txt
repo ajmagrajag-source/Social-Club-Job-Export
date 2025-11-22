@@ -2,3 +2,4 @@ streamlit
 seleniumbase
 pandas
 webdriver-manager
+streamlit-copy-to-clipboard

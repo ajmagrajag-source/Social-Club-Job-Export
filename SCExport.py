@@ -8,7 +8,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.os_manager import ChromeType  # Add this line
+from webdriver_manager.core.os_manager import ChromeType  
+from st_copy_to_clipboard import st_copy_to_clipboard
+from io import StringIO
+import csv
 import time
 import json
 
@@ -585,9 +588,11 @@ def generate_text(jobs, settings):
     return content.strip()
 
 def generate_csv(jobs, settings):
-    """Generate CSV format"""
-    content = ''
+    """Generate CSV format with proper escaping using Python's csv module"""
+    # Create StringIO object to write CSV data
+    output = StringIO()
     
+    # Define header mappings
     header_mappings = {
         'csv_jobname': 'Job Name',
         'csv_joburl': 'Job URL',
@@ -601,62 +606,75 @@ def generate_csv(jobs, settings):
         'csv_lastupdated': 'Date Updated',
     }
     
+    # Get enabled headers
     enabled_headers = [key for key in header_mappings.keys() if settings.get(key, False)]
     
     if settings.get('csv_use_custom', False) and settings.get('csv_custom', ''):
         enabled_headers.append('csv_custom')
         header_mappings['csv_custom'] = 'Custom'
     
+    # Create CSV writer with proper escaping
+    # QUOTE_MINIMAL only quotes fields when necessary (commas, quotes, newlines)
+    writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
+    
+    # Write headers if enabled
     if settings.get('csv_headers', True):
-        content = ','.join([header_mappings[key] for key in enabled_headers]) + '\n'
+        writer.writerow([header_mappings[key] for key in enabled_headers])
     
-    def escape_csv_field(field):
-        if field is None or field == '':
-            return '""'
-        field = str(field).replace('"', '""')
-        if ',' in field or '\n' in field or '"' in field:
-            return f'"{field}"'
-        return field
-    
-    for index, job in enumerate(jobs):
+    # Write data rows
+    for job in jobs:
         row = []
         for key in enabled_headers:
             if key == 'csv_jobname':
-                row.append(escape_csv_field(job['jobName']))
+                row.append(job['jobName'] or '')
             elif key == 'csv_joburl':
-                row.append(escape_csv_field(job['originalURL']))
+                row.append(job['originalURL'] or '')
             elif key == 'csv_jobcreator':
-                row.append(escape_csv_field(job['jobCreator']))
+                row.append(job['jobCreator'] or '')
             elif key == 'csv_jobtype':
-                row.append(escape_csv_field(job['jobType']))
+                row.append(job['jobType'] or '')
             elif key == 'csv_maxplayers':
-                row.append(escape_csv_field(job['maxPlayers']))
+                row.append(job['maxPlayers'] or '')
             elif key == 'csv_gtalens':
-                row.append(escape_csv_field(job['GTALens']))
+                row.append(job['GTALens'] or '')
             elif key == 'csv_jobimage':
-                row.append(escape_csv_field(job['jobImage']))
+                row.append(job['jobImage'] or '')
             elif key == 'csv_jobdescription':
-                row.append(escape_csv_field(job['jobDescription']))
+                row.append(job['jobDescription'] or '')
             elif key == 'csv_creationdate':
-                row.append(escape_csv_field(job['creationDate']))
+                row.append(job['creationDate'] or '')
             elif key == 'csv_lastupdated':
-                row.append(escape_csv_field(job['lastUpdated']))
+                row.append(job['lastUpdated'] or '')
             elif key == 'csv_custom':
-                row.append(escape_csv_field(settings.get('csv_custom', '')))
-        content += ','.join(row) + '\n'
+                row.append(settings.get('csv_custom', ''))
+        
+        writer.writerow(row)
     
-    return content.strip()
+    # Get the CSV content
+    csv_content = output.getvalue()
+    output.close()
+    
+    return csv_content.strip()
 
 def display_code_with_copy_button(content, format_name, key_prefix):
-    """Display code with a prominent manual copy button"""
-    # Create columns for the copy button
-    col1, col2, col3 = st.columns([4, 1, 1])
+    """Display code with a working copy button using st-copy-to-clipboard"""
+    # Create columns for the header and copy button
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.markdown(f"#### 📋 {format_name} Output")
-    with col3:
-        # Using a form to prevent page rerun on click
-        with st.form(key=f"copy_form_{key_prefix}"):
-            copy_clicked = st.form_submit_button("📋 Copy", use_container_width=True, type="primary")
+    with col2:
+        # Use the streamlit-copy-to-clipboard component
+        st_copy_to_clipboard(
+            text=content,
+            before_copy_label="📋 Copy",
+            after_copy_label="✅ Copied!",
+            key=f"copy_{key_prefix}"
+        )
+    
+    # Display the code (this will update when checkboxes change)
+    st.code(content, language=None, line_numbers=False)
+    
+    st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block corner!")
     
     # Display the code
     st.code(content, language=None, line_numbers=False)
