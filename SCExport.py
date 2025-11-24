@@ -659,22 +659,25 @@ def generate_csv(jobs, settings):
 
 def display_code_with_copy_button(content, format_name, key_prefix):
     """Display code with a working copy button using st-copy-to-clipboard"""
-    # Single row with header and button
-    col1, col2 = st.columns([6, 1])
+    # Create columns for the header and copy button
+    col1, col2 = st.columns([4, 1])
     with col1:
-        st.markdown(f"**📋 {format_name} Output**")  # Use bold instead of h4
+        st.markdown(f"#### 📋 {format_name} Output")
     with col2:
+        # Add some vertical spacing to align with the header
+        st.write("")  # Small spacer
+        # Use the streamlit-copy-to-clipboard component
         st_copy_to_clipboard(
             text=content,
-            before_copy_label="Copy",
-            after_copy_label="✅",
+            before_copy_label="📋 Copy",
+            after_copy_label="✅ Copied!",
             key=f"copy_{key_prefix}"
         )
     
-    # Display the code immediately after
+    # Display the code (this will update when checkboxes change)
     st.code(content, language=None, line_numbers=False)
     
-    st.info("💡 Use the 'Copy' button above or the small copy icon in the code block corner!")
+    st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block corner!")
 
 # Settings management functions
 def reset_settings_to_default():
