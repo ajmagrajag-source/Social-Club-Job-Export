@@ -660,10 +660,12 @@ def generate_csv(jobs, settings):
 def display_code_with_copy_button(content, format_name, key_prefix):
     """Display code with a working copy button using st-copy-to-clipboard"""
     # Create columns for the header and copy button
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([5, 1])
     with col1:
         st.markdown(f"#### 📋 {format_name} Output")
     with col2:
+        # Add some vertical spacing to align with the header
+        st.write("")  # Small spacer
         # Use the streamlit-copy-to-clipboard component
         st_copy_to_clipboard(
             text=content,
