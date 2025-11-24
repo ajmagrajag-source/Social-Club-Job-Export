@@ -18,7 +18,7 @@ import streamlit as st
 
 # Page config
 st.set_page_config(
-    page_title="Rockstar Job Scraper",
+    page_title="Rockstar Job Exporter",
     page_icon="🎮",
     layout="wide"
 )
@@ -833,7 +833,7 @@ def main():
     initialize_session_state()
     
     # Title and description
-    st.title("🎮 Rockstar Social Club Job Scraper")
+    st.title("🎮 Rockstar Social Club Job Exporter")
     st.markdown("""
     This tool scrapes job information from Rockstar Social Club URLs and displays them in an organized format.
     Perfect for sharing jobs on forums, Discord, YouTube, and more!
@@ -1004,7 +1004,7 @@ def main():
     st.markdown(
         """
         <div style='text-align: center; color: #666;'>
-        Made for the GTA Creator & Playlist Community | Scrapes data from Rockstar Social Club<br>
+        Made for the GTA Creator & Playlist Community | Exports data from Rockstar Social Club<br>
         <small>💡 Settings automatically persist during your session. Export them to save permanently!</small>
         </div>
         """,
