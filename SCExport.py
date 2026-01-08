@@ -82,7 +82,7 @@ DEFAULT_SETTINGS = {
     'text_linebreak': False,
     
     # CSV settings
-    'csv_headers': True,
+    'csv_headers': False,
     'csv_jobname': True,
     'csv_joburl': True,
     'csv_jobcreator': True,
@@ -675,7 +675,7 @@ def display_code_with_copy_button(content, format_name, key_prefix):
     # Display the code (this will update when checkboxes change)
     st.code(content, language=None, line_numbers=False)
     
-    st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block corner!")
+    st.info("💡 Use the '📋 Copy' button above or the small copy icon in the code block's top right corner!")
 
 # Settings management functions
 def reset_settings_to_default():
